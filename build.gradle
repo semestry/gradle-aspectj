@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+archivesBaseName = 'gradle-aspectj'
+group = 'nl.eveoh'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    compile localGroovy()
+    compile gradleApi()
+    deployerJars "org.apache.maven.wagon:wagon-ssh-external:1.0-beta-6"
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: "scpexe://p-web-01/var/www/dl.eveoh.nl/maven2")
+        }
+    }
+}
