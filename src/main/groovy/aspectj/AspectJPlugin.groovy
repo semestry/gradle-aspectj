@@ -19,6 +19,7 @@ import org.gradle.plugins.ide.eclipse.model.ProjectDependency
 /**
  *
  * @author Luke Taylor
+ * @author Mike Noordermeer
  */
 class AspectJPlugin implements Plugin<Project> {
 
@@ -30,7 +31,7 @@ class AspectJPlugin implements Plugin<Project> {
         }
 
         if (project.configurations.findByName('ajtools') == null) {
-            project.configurations.add('ajtools')
+            project.configurations.create('ajtools')
             project.dependencies {
                 ajtools "org.aspectj:aspectjtools:${project.aspectjVersion}"
                 compile "org.aspectj:aspectjrt:${project.aspectjVersion}"
@@ -38,10 +39,14 @@ class AspectJPlugin implements Plugin<Project> {
         }
 
         if (project.configurations.findByName('aspectpath') == null) {
-            project.configurations.add('aspectpath')
+            project.configurations.create('aspectpath')
         }
 
-        project.tasks.add(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
+        if (project.configurations.findByName('ajInpath') == null) {
+            project.configurations.create('ajInpath')
+        }
+
+        project.tasks.create(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
             dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
 
             dependsOn project.processResources
@@ -49,50 +54,30 @@ class AspectJPlugin implements Plugin<Project> {
             inputs.files(sourceSet.allSource)
             outputs.dir(sourceSet.output.classesDir)
             aspectPath = project.configurations.aspectpath
+            ajInpath = project.configurations.ajInpath
         }
         project.tasks.compileJava.deleteAllActions()
         project.tasks.compileJava.dependsOn project.tasks.compileAspect
 
 
-        project.tasks.add(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
-            dependsOn project.processTestResources, project.compileJava, project.jar
+        project.tasks.create(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
+            dependsOn project.processTestResources, project.compileJava
             sourceSet = project.sourceSets.test
             inputs.files(sourceSet.allSource)
             outputs.dir(sourceSet.output.classesDir)
-            aspectPath = project.files(project.configurations.aspectpath, project.jar.archivePath)
+            aspectPath = project.configurations.aspectpath
+            ajInpath = project.configurations.ajInpath
         }
         project.tasks.compileTestJava.deleteAllActions()
         project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
-
-        project.tasks.withType(GenerateEclipseProject) {
-            project.eclipse.project.file.whenMerged { p ->
-                p.natures.add(0, 'org.eclipse.ajdt.ui.ajnature')
-                p.buildCommands = [new BuildCommand('org.eclipse.ajdt.core.ajbuilder')]
-            }
-        }
-
-        project.tasks.withType(GenerateEclipseClasspath) {
-            project.eclipse.classpath.file.whenMerged { classpath ->
-                def entries = classpath.entries.findAll { it instanceof ProjectDependency}.findAll { entry ->
-                    def projectPath = entry.path.replaceAll('/','')
-                    project.rootProject.allprojects.find{ p->
-                        if(p.plugins.findPlugin(EclipsePlugin)) {
-                            return p.eclipse.project.name == projectPath && p.plugins.findPlugin(AspectJPlugin)
-                        }
-                        false
-                    }
-                }
-                entries.each { entry->
-                    entry.entryAttributes.put('org.eclipse.ajdt.aspectpath','org.eclipse.ajdt.aspectpath')
-                }
-            }
-        }
     }
 }
 
 class Ajc extends DefaultTask {
     SourceSet sourceSet
     FileCollection aspectPath
+    FileCollection ajInpath
+    String xlint = 'ignore'
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
@@ -109,7 +94,8 @@ class Ajc extends DefaultTask {
         ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
                 source: project.convention.plugins.java.sourceCompatibility,
                 target: project.convention.plugins.java.targetCompatibility,
-                aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java', showWeaveInfo: 'true') {
+                inpath: ajInpath.asPath, xlint: xlint,
+                aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java,**/*.aj', showWeaveInfo: 'true') {
             sourceroots {
                 sourceSet.java.srcDirs.each {
                     logger.info("   sourceRoot $it")
