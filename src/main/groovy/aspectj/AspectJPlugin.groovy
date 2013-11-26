@@ -46,7 +46,7 @@ class AspectJPlugin implements Plugin<Project> {
 
         if (!project.sourceSets.main.allJava.isEmpty()) {
             project.tasks.create(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
-                dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
+                dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "build")
 
                 dependsOn project.processResources
                 sourceSet = project.sourceSets.main
