@@ -16,7 +16,7 @@ configurations {
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    deployerJars "org.apache.maven.wagon:wagon-ssh-external:1.0-beta-6"
+    deployerJars "org.apache.maven.wagon:wagon-ssh-external:2.5"
 }
 
 uploadArchives {
