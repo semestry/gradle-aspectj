@@ -17,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "nl.eveoh:gradle-aspectj:1.1"
+        classpath "nl.eveoh:gradle-aspectj:1.2"
     }
 }
 
