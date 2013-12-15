@@ -28,7 +28,7 @@ project {
 apply plugin: 'aspectj'
 ```
 
-Use the `aspectpath` and `ajInpath` to specify external aspects or external code to weave:
+Use the `aspectpath`, `ajInpath`, `testAspectpath` and `testAjInpath` to specify external aspects or external code to weave:
 
 ```groovy
 dependencies {

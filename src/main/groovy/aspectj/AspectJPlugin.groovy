@@ -38,12 +38,10 @@ class AspectJPlugin implements Plugin<Project> {
             }
         }
 
-        if (project.configurations.findByName('aspectpath') == null) {
-            project.configurations.create('aspectpath')
-        }
-
-        if (project.configurations.findByName('ajInpath') == null) {
-            project.configurations.create('ajInpath')
+        for(configuration in ['aspectpath', 'ajInpath', 'testAspectpath', 'testAjInpath']) {
+            if (project.configurations.findByName(configuration) == null) {
+                project.configurations.create(configuration)
+            }
         }
 
         if (!project.sourceSets.main.allSource.isEmpty()) {
@@ -68,8 +66,8 @@ class AspectJPlugin implements Plugin<Project> {
                 sourceSet = project.sourceSets.test
                 inputs.files(sourceSet.allSource)
                 outputs.dir(sourceSet.output.classesDir)
-                aspectPath = project.configurations.aspectpath
-                ajInpath = project.configurations.ajInpath
+                aspectPath = project.configurations.testAspectpath
+                ajInpath = project.configurations.testAjInpath
             }
 
             project.tasks.compileTestJava.deleteAllActions()
