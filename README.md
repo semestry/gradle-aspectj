@@ -12,7 +12,7 @@ Something like this:
 buildscript {
     repositories {
         maven {
-            url "http://www.eveoh.nl/files/maven2"
+            url "https://maven.eveoh.nl/content/repositories/releases"
         }
     }
 
