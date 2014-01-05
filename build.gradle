@@ -1,29 +1,36 @@
 apply plugin: 'groovy'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
-archivesBaseName = 'gradle-aspectj'
 group = 'nl.eveoh'
 version = '1.2'
 
 repositories {
-    mavenCentral()
-}
-
-configurations {
-    deployerJars
+    maven {
+        url "https://maven.eveoh.nl/content/groups/public"
+    }
 }
 
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    deployerJars "org.apache.maven.wagon:wagon-ssh-external:2.5"
 }
 
-uploadArchives {
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
     repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: "scpexe://p-web-01/var/www/dl.eveoh.nl/maven2")
+        maven {
+            url "https://maven.eveoh.nl/content/repositories/releases"
+            if (project.hasProperty('mavenUser')) {
+                credentials {
+                    username mavenUser
+                    password mavenPass
+                }
+            }
         }
     }
 }
+
