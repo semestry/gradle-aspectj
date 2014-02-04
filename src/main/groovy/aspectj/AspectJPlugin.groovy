@@ -83,8 +83,14 @@ class Ajc extends DefaultTask {
     FileCollection aspectPath
     FileCollection ajInpath
 
+    // ignore or warning
     String xlint = 'ignore'
-    String maxmem = '128m'
+
+    // defaulted to 124m based on
+    //     java -XX:+PrintFlagsFinal -version 2> /dev/null | \
+    //         grep MaxHeapSize | awk '{print $4}' | \
+    //         xargs -I{} echo {}/1024/1024 | bc
+    String maxmem = '124m'
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
