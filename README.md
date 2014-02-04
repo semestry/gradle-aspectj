@@ -45,7 +45,7 @@ compileAspect {
 }
 ```
 
-Also by default, the ajc ant task will be forked with a maximum JVM heap size of 128MB. Specify a different value for the `maxmem` variable of the `compileAspect` or
+Also by default, the ajc ant task will be forked with a maximum JVM heap size of 124MB. Specify a different value for the `maxmem` variable of the `compileAspect` or
 `compileTestAspect` task to increase or decrease the max heap size.
 
 ```groovy
