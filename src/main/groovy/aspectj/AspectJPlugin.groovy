@@ -77,11 +77,14 @@ class AspectJPlugin implements Plugin<Project> {
 }
 
 class Ajc extends DefaultTask {
+
     SourceSet sourceSet
+
     FileCollection aspectPath
     FileCollection ajInpath
+
     String xlint = 'ignore'
-    String maxmem = '32m'
+    String maxmem = '128m'
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
@@ -95,11 +98,13 @@ class Ajc extends DefaultTask {
         logger.info("classpath: ${sourceSet.compileClasspath.asPath}")
         logger.info("srcDirs $sourceSet.java.srcDirs")
         ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
-        ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
+        ant.iajc(classpath: sourceSet.compileClasspath.asPath,
+                destDir: sourceSet.output.classesDir.absolutePath,
                 source: project.convention.plugins.java.sourceCompatibility,
                 target: project.convention.plugins.java.targetCompatibility,
                 inpath: ajInpath.asPath,
                 xlint: xlint,
+                fork: 'true',
                 maxmem: maxmem,
                 aspectPath: aspectPath.asPath,
                 sourceRootCopyFilter: '**/*.java,**/*.aj',
