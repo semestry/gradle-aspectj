@@ -81,6 +81,7 @@ class Ajc extends DefaultTask {
     FileCollection aspectPath
     FileCollection ajInpath
     String xlint = 'ignore'
+    String maxmem = '32m'
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
@@ -97,8 +98,12 @@ class Ajc extends DefaultTask {
         ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
                 source: project.convention.plugins.java.sourceCompatibility,
                 target: project.convention.plugins.java.targetCompatibility,
-                inpath: ajInpath.asPath, xlint: xlint,
-                aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java,**/*.aj', showWeaveInfo: 'true') {
+                inpath: ajInpath.asPath,
+                xlint: xlint,
+                maxmem: maxmem,
+                aspectPath: aspectPath.asPath,
+                sourceRootCopyFilter: '**/*.java,**/*.aj',
+                showWeaveInfo: 'true') {
             sourceroots {
                 sourceSet.java.srcDirs.each {
                     logger.info("   sourceRoot $it")
