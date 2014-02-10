@@ -86,11 +86,7 @@ class Ajc extends DefaultTask {
     // ignore or warning
     String xlint = 'ignore'
 
-    // defaulted to 124m based on
-    //     java -XX:+PrintFlagsFinal -version 2> /dev/null | \
-    //         grep MaxHeapSize | awk '{print $4}' | \
-    //         xargs -I{} echo {}/1024/1024 | bc
-    String maxmem = '124m'
+    String maxmem
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
@@ -103,18 +99,24 @@ class Ajc extends DefaultTask {
         logger.info("Running ajc ...")
         logger.info("classpath: ${sourceSet.compileClasspath.asPath}")
         logger.info("srcDirs $sourceSet.java.srcDirs")
-        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
-        ant.iajc(classpath: sourceSet.compileClasspath.asPath,
+
+        def iajcArgs = [classpath: sourceSet.compileClasspath.asPath,
                 destDir: sourceSet.output.classesDir.absolutePath,
                 source: project.convention.plugins.java.sourceCompatibility,
                 target: project.convention.plugins.java.targetCompatibility,
                 inpath: ajInpath.asPath,
                 xlint: xlint,
                 fork: 'true',
-                maxmem: maxmem,
                 aspectPath: aspectPath.asPath,
                 sourceRootCopyFilter: '**/*.java,**/*.aj',
-                showWeaveInfo: 'true') {
+                showWeaveInfo: 'true']
+
+        if (maxmem != null) {
+            iajcArgs['maxmem'] = maxmem
+        }
+
+        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
+        ant.iajc(iajcArgs) {
             sourceroots {
                 sourceSet.java.srcDirs.each {
                     logger.info("   sourceRoot $it")
