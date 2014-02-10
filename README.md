@@ -45,9 +45,18 @@ compileAspect {
 }
 ```
 
+Also by default, the ajc ant task will be forked with a maximum JVM heap size of 124MB. Specify a different value for the `maxmem` variable of the `compileAspect` or
+`compileTestAspect` task to increase or decrease the max heap size.
+
+```groovy
+compileAspect {
+    maxmem = '1024m'
+}
+```
+
 License
 -------
 
 The project is licensed under the Apache 2.0 license. Most/all of the code
-originated from the Spring Security project and was created by Luke Taylor and 
+originated from the Spring Security project and was created by Luke Taylor and
 Rob Winch. See `LICENSE` for details.
