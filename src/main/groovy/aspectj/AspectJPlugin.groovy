@@ -46,15 +46,15 @@ class AspectJPlugin implements Plugin<Project> {
 
         if (!project.sourceSets.main.allJava.isEmpty()) {
             project.tasks.create(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
-                dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "build")
-
-                dependsOn project.processResources
                 sourceSet = project.sourceSets.main
+
                 inputs.files(sourceSet.allJava)
                 outputs.dir(sourceSet.output.classesDir)
                 aspectPath = project.configurations.aspectpath
                 ajInpath = project.configurations.ajInpath
             }
+
+            project.tasks.compileAspect.setDependsOn(project.tasks.compileJava.dependsOn)
 
             project.tasks.compileJava.deleteAllActions()
             project.tasks.compileJava.dependsOn project.tasks.compileAspect
@@ -62,13 +62,15 @@ class AspectJPlugin implements Plugin<Project> {
 
         if (!project.sourceSets.test.allJava.isEmpty()) {
             project.tasks.create(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
-                dependsOn project.processTestResources, project.compileJava
                 sourceSet = project.sourceSets.test
+
                 inputs.files(sourceSet.allJava)
                 outputs.dir(sourceSet.output.classesDir)
                 aspectPath = project.configurations.testAspectpath
                 ajInpath = project.configurations.testAjInpath
             }
+
+            project.tasks.compileTestAspect.setDependsOn(project.tasks.compileTestJava.dependsOn)
 
             project.tasks.compileTestJava.deleteAllActions()
             project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
