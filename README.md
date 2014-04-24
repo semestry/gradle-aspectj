@@ -21,8 +21,12 @@ buildscript {
     }
 }
 
-project {
-    ext.aspectjVersion = '1.7.4'
+repositories {
+    mavenCentral()
+}
+
+project.ext {
+    aspectjVersion = '1.7.4'
 }
 
 apply plugin: 'aspectj'
