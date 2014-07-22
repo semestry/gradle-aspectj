@@ -1,20 +1,13 @@
 package aspectj
 
-import org.gradle.api.Project
-import org.gradle.api.Plugin
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.logging.LogLevel
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.SourceSet
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-
-import org.gradle.api.plugins.JavaPlugin
-import org.gradle.plugins.ide.eclipse.GenerateEclipseProject
-import org.gradle.plugins.ide.eclipse.GenerateEclipseClasspath
-import org.gradle.plugins.ide.eclipse.EclipsePlugin
-import org.gradle.plugins.ide.eclipse.model.BuildCommand
-import org.gradle.plugins.ide.eclipse.model.ProjectDependency
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
+import org.gradle.api.logging.LogLevel
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.TaskAction
 
 /**
  *
@@ -88,7 +81,9 @@ class Ajc extends DefaultTask {
     // ignore or warning
     String xlint = 'ignore'
 
+
     String maxmem
+    Map<String, String> additionalAjcArgs
 
     Ajc() {
         logging.captureStandardOutput(LogLevel.INFO)
@@ -113,9 +108,18 @@ class Ajc extends DefaultTask {
                 sourceRootCopyFilter: '**/*.java,**/*.aj',
                 showWeaveInfo: 'true']
 
-        if (maxmem != null) {
+        if (null != maxmem) {
+            logger.warn("You should really be setting the maxmem property through the additionalAjcArgs variable")
             iajcArgs['maxmem'] = maxmem
         }
+
+        if (null != additionalAjcArgs) {
+            for (pair in additionalAjcArgs) {
+                iajcArgs[pair.key] = pair.value
+            }
+        }
+
+
 
         ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
         ant.iajc(iajcArgs) {
