@@ -109,7 +109,6 @@ class Ajc extends DefaultTask {
                 showWeaveInfo: 'true']
 
         if (null != maxmem) {
-            logger.warn("You should really be setting the maxmem property through the additionalAjcArgs variable")
             iajcArgs['maxmem'] = maxmem
         }
 
