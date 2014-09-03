@@ -56,8 +56,9 @@ class AspectJPlugin implements Plugin<Project> {
         if (!project.sourceSets.test.allJava.isEmpty()) {
             project.tasks.create(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
                 sourceSet = project.sourceSets.test
+                mainSet = project.sourceSets.main
 
-                inputs.files(sourceSet.allJava)
+                inputs.files(sourceSet.allJava, mainSet.allJava)
                 outputs.dir(sourceSet.output.classesDir)
                 aspectPath = project.configurations.testAspectpath
                 ajInpath = project.configurations.testAjInpath
@@ -74,6 +75,7 @@ class AspectJPlugin implements Plugin<Project> {
 class Ajc extends DefaultTask {
 
     SourceSet sourceSet
+    SourceSet mainSet
 
     FileCollection aspectPath
     FileCollection ajInpath
@@ -95,8 +97,14 @@ class Ajc extends DefaultTask {
         logger.info("="*30)
         logger.info("Running ajc ...")
         logger.info("classpath: ${sourceSet.compileClasspath.asPath}")
-        logger.info("srcDirs $sourceSet.java.srcDirs")
-
+  
+        if( null != mainSet) {
+            logger.info("srcDirs $sourceSet.java.srcDirs $mainSet.java.srcDirs")
+        }
+        else {
+            logger.info("srcDirs $sourceSet.java.srcDirs")
+        }
+        
         def iajcArgs = [classpath: sourceSet.compileClasspath.asPath,
                 destDir: sourceSet.output.classesDir.absolutePath,
                 source: project.convention.plugins.java.sourceCompatibility,
@@ -126,6 +134,13 @@ class Ajc extends DefaultTask {
                 sourceSet.java.srcDirs.each {
                     logger.info("   sourceRoot $it")
                     pathelement(location: it.absolutePath)
+                }
+                
+                if( null != mainSet) {
+                    mainSet.java.srcDirs.each {
+                        logger.info("   sourceRoot $it")
+                        pathelement(location: it.absolutePath)
+                    }
                 }
             }
         }
