@@ -32,7 +32,7 @@ class AspectJPlugin implements Plugin<Project> {
             }
         }
 
-        for(configuration in ['aspectpath', 'ajInpath', 'testAspectpath', 'testAjInpath']) {
+        for (configuration in ['aspectpath', 'ajInpath', 'testAspectpath', 'testAjInpath']) {
             if (project.configurations.findByName(configuration) == null) {
                 project.configurations.create(configuration)
             }
@@ -82,7 +82,6 @@ class Ajc extends DefaultTask {
     // ignore or warning
     String xlint = 'ignore'
 
-
     String maxmem
     Map<String, String> additionalAjcArgs
 
@@ -92,22 +91,22 @@ class Ajc extends DefaultTask {
 
     @TaskAction
     def compile() {
-        logger.info("="*30)
-        logger.info("="*30)
+        logger.info("=" * 30)
+        logger.info("=" * 30)
         logger.info("Running ajc ...")
         logger.info("classpath: ${sourceSet.compileClasspath.asPath}")
         logger.info("srcDirs $sourceSet.java.srcDirs")
 
-        def iajcArgs = [classpath: sourceSet.compileClasspath.asPath,
-                destDir: sourceSet.output.classesDir.absolutePath,
-                source: project.convention.plugins.java.sourceCompatibility,
-                target: project.convention.plugins.java.targetCompatibility,
-                inpath: ajInpath.asPath,
-                xlint: xlint,
-                fork: 'true',
-                aspectPath: aspectPath.asPath,
-                sourceRootCopyFilter: '**/*.java,**/*.aj',
-                showWeaveInfo: 'true']
+        def iajcArgs = [classpath           : sourceSet.compileClasspath.asPath,
+                        destDir             : sourceSet.output.classesDir.absolutePath,
+                        source              : project.convention.plugins.java.sourceCompatibility,
+                        target              : project.convention.plugins.java.targetCompatibility,
+                        inpath              : ajInpath.asPath,
+                        xlint               : xlint,
+                        fork                : 'true',
+                        aspectPath          : aspectPath.asPath,
+                        sourceRootCopyFilter: '**/*.java,**/*.aj',
+                        showWeaveInfo       : 'true']
 
         if (null != maxmem) {
             iajcArgs['maxmem'] = maxmem
@@ -118,8 +117,6 @@ class Ajc extends DefaultTask {
                 iajcArgs[pair.key] = pair.value
             }
         }
-
-
 
         ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
         ant.iajc(iajcArgs) {
