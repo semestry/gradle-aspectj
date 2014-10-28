@@ -14,6 +14,7 @@ import org.gradle.api.tasks.TaskAction
  *
  * @author Luke Taylor
  * @author Mike Noordermeer
+ * @author Mark Janssen
  */
 class AspectJPlugin implements Plugin<Project> {
 
@@ -42,32 +43,48 @@ class AspectJPlugin implements Plugin<Project> {
             project.tasks.create(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
                 sourceSet = project.sourceSets.main
 
-                inputs.files(sourceSet.allJava)
+                if (project.postCompileWeaving) {
+                    inputs.files(sourceSet.output.classesDir)
+                } else {
+                    inputs.files(sourceSet.allJava)
+                }
                 outputs.dir(sourceSet.output.classesDir)
                 aspectPath = project.configurations.aspectpath
                 ajInpath = project.configurations.ajInpath
             }
 
-            project.tasks.compileAspect.setDependsOn(project.tasks.compileJava.dependsOn)
-
-            project.tasks.compileJava.deleteAllActions()
-            project.tasks.compileJava.dependsOn project.tasks.compileAspect
+            if (project.postCompileWeaving) {
+                project.tasks.compileAspect.dependsOn project.tasks.compileJava
+                project.tasks.compileJava.finalizedBy project.tasks.compileAspect
+            } else {
+                project.tasks.compileAspect.setDependsOn(project.tasks.compileJava.dependsOn)
+                project.tasks.compileJava.deleteAllActions()
+                project.tasks.compileJava.dependsOn project.tasks.compileAspect
+            }
         }
 
         if (!project.sourceSets.test.allJava.isEmpty()) {
             project.tasks.create(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
                 sourceSet = project.sourceSets.test
 
-                inputs.files(sourceSet.allJava)
+                if (project.postCompileWeaving) {
+                    inputs.files(sourceSet.output.classesDir)
+                } else {
+                    inputs.files(sourceSet.allJava)
+                }
                 outputs.dir(sourceSet.output.classesDir)
                 aspectPath = project.configurations.testAspectpath
                 ajInpath = project.configurations.testAjInpath
             }
 
-            project.tasks.compileTestAspect.setDependsOn(project.tasks.compileTestJava.dependsOn)
-
-            project.tasks.compileTestJava.deleteAllActions()
-            project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
+            if (project.postCompileWeaving) {
+                project.tasks.compileTestAspect.dependsOn project.tasks.compileTestJava
+                project.tasks.compileTestJava.finalizedBy project.tasks.compileTestAspect
+            } else {
+                project.tasks.compileTestAspect.setDependsOn(project.tasks.compileTestJava.dependsOn)
+                project.tasks.compileTestJava.deleteAllActions()
+                project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
+            }
         }
     }
 }
