@@ -66,6 +66,11 @@ compileAspect {
 }
 ```
 
+Development
+-----------
+
+This project contains the feature set we need for our own projects, but other projects may have other requirements. Feel free to open a pull request to add a feature.
+
 License
 -------
 
