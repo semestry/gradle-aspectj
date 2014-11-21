@@ -49,6 +49,7 @@ class AspectJPlugin implements Plugin<Project> {
             }
 
             project.tasks.compileAspect.setDependsOn(project.tasks.compileJava.dependsOn)
+            project.tasks.compileAspect.dependsOn project.processResources, project.configurations.aspectpath, project.configurations.ajInpath
 
             project.tasks.compileJava.deleteAllActions()
             project.tasks.compileJava.dependsOn project.tasks.compileAspect
@@ -65,6 +66,7 @@ class AspectJPlugin implements Plugin<Project> {
             }
 
             project.tasks.compileTestAspect.setDependsOn(project.tasks.compileTestJava.dependsOn)
+            project.tasks.compileTestAspect.dependsOn project.processTestResources, project.configurations.testAspectpath, project.configurations.testAjInpath
 
             project.tasks.compileTestJava.deleteAllActions()
             project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
