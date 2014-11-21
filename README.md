@@ -17,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "nl.eveoh:gradle-aspectj:1.4"
+        classpath "nl.eveoh:gradle-aspectj:1.5"
     }
 }
 
@@ -26,7 +26,7 @@ repositories {
 }
 
 project.ext {
-    aspectjVersion = '1.7.4'
+    aspectjVersion = '1.8.4'
 }
 
 apply plugin: 'aspectj'
