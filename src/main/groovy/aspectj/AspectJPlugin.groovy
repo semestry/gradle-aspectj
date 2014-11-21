@@ -32,42 +32,78 @@ class AspectJPlugin implements Plugin<Project> {
             }
         }
 
-        for (configuration in ['aspectpath', 'ajInpath', 'testAspectpath', 'testAjInpath']) {
-            if (project.configurations.findByName(configuration) == null) {
-                project.configurations.create(configuration)
+        for (projectSourceSet in project.sourceSets) {
+            def namingConventions = projectSourceSet.name.equals('main') ? new MainNamingConventions() : new DefaultNamingConventions();
+            for (configuration in [namingConventions.getAspectPathConfigurationName(projectSourceSet), namingConventions.getAspectInpathConfigurationName(projectSourceSet)]) {
+                if (project.configurations.findByName(configuration) == null) {
+                    project.configurations.create(configuration)
+                }
+            }
+
+            if (!projectSourceSet.allJava.isEmpty()) {
+                def aspectTaskName = namingConventions.getAspectCompileTaskName(projectSourceSet)
+                def javaTaskName = namingConventions.getJavaCompileTaskName(projectSourceSet)
+
+                project.tasks.create(name: aspectTaskName, overwrite: true, description: "Compiles AspectJ Source for ${projectSourceSet.name} source set", type: Ajc) {
+                    sourceSet = projectSourceSet
+                    inputs.files(sourceSet.allJava)
+                    outputs.dir(sourceSet.output.classesDir)
+                    aspectpath = project.configurations.findByName(namingConventions.getAspectPathConfigurationName(projectSourceSet))
+                    ajInpath = project.configurations.findByName(namingConventions.getAspectInpathConfigurationName(projectSourceSet))
+                }
+
+                project.tasks[aspectTaskName].setDependsOn(project.tasks[javaTaskName].dependsOn)
+                project.tasks[aspectTaskName].dependsOn(project.tasks[aspectTaskName].aspectpath)
+                project.tasks[aspectTaskName].dependsOn(project.tasks[aspectTaskName].ajInpath)
+                project.tasks[javaTaskName].deleteAllActions()
+                project.tasks[javaTaskName].dependsOn(project.tasks[aspectTaskName])
             }
         }
+    }
 
-        if (!project.sourceSets.main.allJava.isEmpty()) {
-            project.tasks.create(name: 'compileAspect', overwrite: true, description: 'Compiles AspectJ Source', type: Ajc) {
-                sourceSet = project.sourceSets.main
+    private static class MainNamingConventions implements NamingConventions {
 
-                inputs.files(sourceSet.allJava)
-                outputs.dir(sourceSet.output.classesDir)
-                aspectPath = project.configurations.aspectpath
-                ajInpath = project.configurations.ajInpath
-            }
-
-            project.tasks.compileAspect.setDependsOn(project.tasks.compileJava.dependsOn)
-
-            project.tasks.compileJava.deleteAllActions()
-            project.tasks.compileJava.dependsOn project.tasks.compileAspect
+        @Override
+        String getJavaCompileTaskName(final SourceSet sourceSet) {
+            return "compileJava"
         }
 
-        if (!project.sourceSets.test.allJava.isEmpty()) {
-            project.tasks.create(name: 'compileTestAspect', overwrite: true, description: 'Compiles AspectJ Test Source', type: Ajc) {
-                sourceSet = project.sourceSets.test
+        @Override
+        String getAspectCompileTaskName(final SourceSet sourceSet) {
+            return "compileAspect"
+        }
 
-                inputs.files(sourceSet.allJava)
-                outputs.dir(sourceSet.output.classesDir)
-                aspectPath = project.configurations.testAspectpath
-                ajInpath = project.configurations.testAjInpath
-            }
+        @Override
+        String getAspectPathConfigurationName(final SourceSet sourceSet) {
+            return "aspectpath"
+        }
 
-            project.tasks.compileTestAspect.setDependsOn(project.tasks.compileTestJava.dependsOn)
+        @Override
+        String getAspectInpathConfigurationName(final SourceSet sourceSet) {
+            return "ajInpath"
+        }
+    }
 
-            project.tasks.compileTestJava.deleteAllActions()
-            project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
+    private static class DefaultNamingConventions implements NamingConventions {
+
+        @Override
+        String getJavaCompileTaskName(final SourceSet sourceSet) {
+            return "compile${sourceSet.name.capitalize()}Java"
+        }
+
+        @Override
+        String getAspectCompileTaskName(final SourceSet sourceSet) {
+            return "compile${sourceSet.name.capitalize()}Aspect"
+        }
+
+        @Override
+        String getAspectPathConfigurationName(final SourceSet sourceSet) {
+            return "${sourceSet.name}Aspectpath"
+        }
+
+        @Override
+        String getAspectInpathConfigurationName(final SourceSet sourceSet) {
+            return "${sourceSet.name}AjInpath"
         }
     }
 }
@@ -76,7 +112,7 @@ class Ajc extends DefaultTask {
 
     SourceSet sourceSet
 
-    FileCollection aspectPath
+    FileCollection aspectpath
     FileCollection ajInpath
 
     // ignore or warning
@@ -104,7 +140,7 @@ class Ajc extends DefaultTask {
                         inpath              : ajInpath.asPath,
                         xlint               : xlint,
                         fork                : 'true',
-                        aspectPath          : aspectPath.asPath,
+                        aspectPath          : aspectpath.asPath,
                         sourceRootCopyFilter: '**/*.java,**/*.aj',
                         showWeaveInfo       : 'true']
 
@@ -120,7 +156,7 @@ class Ajc extends DefaultTask {
 
         ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
         ant.iajc(iajcArgs) {
-            sourceroots {
+            sourceRoots {
                 sourceSet.java.srcDirs.each {
                     logger.info("   sourceRoot $it")
                     pathelement(location: it.absolutePath)
