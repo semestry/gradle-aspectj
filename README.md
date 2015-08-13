@@ -66,6 +66,8 @@ compileAspect {
 }
 ```
 
+See https://github.com/eveoh/aspectj-example for an example project, contributed by Jason Zwolak.
+
 Development
 -----------
 
