@@ -47,7 +47,7 @@ class AspectJPlugin implements Plugin<Project> {
                 project.tasks.create(name: aspectTaskName, overwrite: true, description: "Compiles AspectJ Source for ${projectSourceSet.name} source set", type: Ajc) {
                     sourceSet = projectSourceSet
                     inputs.files(sourceSet.allJava)
-                    outputs.dir(sourceSet.output.classesDir)
+                    outputs.dir(sourceSet.java.outputDir)
                     aspectpath = project.configurations.findByName(namingConventions.getAspectPathConfigurationName(projectSourceSet))
                     ajInpath = project.configurations.findByName(namingConventions.getAspectInpathConfigurationName(projectSourceSet))
                 }
@@ -134,8 +134,8 @@ class Ajc extends DefaultTask {
         logger.info("srcDirs $sourceSet.java.srcDirs")
 
         def iajcArgs = [classpath           : sourceSet.compileClasspath.asPath,
-                        destDir             : sourceSet.output.classesDir.absolutePath,
-                        s                   : sourceSet.output.classesDir.absolutePath,
+                        destDir             : sourceSet.java.outputDir.absolutePath,
+                        s                   : sourceSet.java.outputDir.absolutePath,
                         source              : project.convention.plugins.java.sourceCompatibility,
                         target              : project.convention.plugins.java.targetCompatibility,
                         inpath              : ajInpath.asPath,
