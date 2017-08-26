@@ -17,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "nl.eveoh:gradle-aspectj:1.6"
+        classpath "nl.eveoh:gradle-aspectj:2.0"
     }
 }
 
@@ -31,6 +31,8 @@ project.ext {
 
 apply plugin: 'aspectj'
 ```
+
+Note that version 2.0+ is only compatible with Gradle 4+. Use version 1.6 for earlier Gradle versions.
 
 Use the `aspectpath`, `ajInpath`, `testAspectpath` and `testAjInpath` to specify external aspects or external code to weave:
 
