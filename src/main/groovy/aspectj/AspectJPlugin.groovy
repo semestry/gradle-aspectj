@@ -20,15 +20,19 @@ class AspectJPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.plugins.apply(JavaPlugin)
 
-        if (!project.hasProperty('aspectjVersion')) {
-            throw new GradleException("You must set the property 'aspectjVersion' before applying the aspectj plugin")
-        }
+        def aspectj = project.extensions.create('aspectj', AspectJExtension, project)
 
         if (project.configurations.findByName('ajtools') == null) {
             project.configurations.create('ajtools')
-            project.dependencies {
-                ajtools "org.aspectj:aspectjtools:${project.aspectjVersion}"
-                compile "org.aspectj:aspectjrt:${project.aspectjVersion}"
+            project.afterEvaluate { p ->
+                if (aspectj.version == null) {
+                    throw new GradleException("No aspectj version supplied")
+                }
+
+                p.dependencies {
+                    ajtools "org.aspectj:aspectjtools:${aspectj.version}"
+                    compile "org.aspectj:aspectjrt:${aspectj.version}"
+                }
             }
         }
 
@@ -164,5 +168,14 @@ class Ajc extends DefaultTask {
                 }
             }
         }
+    }
+}
+
+class AspectJExtension {
+
+    String version
+
+    AspectJExtension(Project project) {
+        this.version = project.findProperty('aspectjVersion') ?: '1.8.12'
     }
 }

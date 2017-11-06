@@ -5,7 +5,11 @@ Usage
 -----
 
 Either build this project yourself, and include the `.jar` in your buildscript dependencies,
-or use our Maven repo. Then set `ext.aspectjVersion` to your AspectJ version and `apply plugin: 'aspectj'`.
+or use our Maven repo. The plugin is applied using `apply plugin: 'aspectj'`. 
+The version of AspectJ to use can be defined using either `ext.aspectjVersion`, 
+or the `aspectj` extension's `version` attribute. 
+If the AspectJ version is not set, version `1.8.12` is used as the default.
+
 Something like this:
 
 ```groovy
@@ -25,11 +29,16 @@ repositories {
     mavenCentral()
 }
 
-project.ext {
-    aspectjVersion = '1.8.4'
-}
-
 apply plugin: 'aspectj'
+
+// Optionally
+project.ext {
+    aspectjVersion = '1.8.12'
+}
+// Or
+aspectj {
+    version = '1.8.12'
+}
 ```
 
 Note that version 2.0+ is only compatible with Gradle 4+. Use version 1.6 for earlier Gradle versions.
