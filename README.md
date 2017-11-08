@@ -82,7 +82,7 @@ See https://github.com/eveoh/aspectj-example for an example project, contributed
 Development
 -----------
 
-This project contains the feature set we need for our own projects, but other projects may have other requirements. Feel free to open a pull request to add a feature.
+We do not use this code any longer and this repository has been archived. Feel free to fork to make your own changes.
 
 License
 -------
